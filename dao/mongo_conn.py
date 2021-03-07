@@ -56,7 +56,7 @@ params = {
     "host": "101.37.89.200",
     "port": 27017,
     "user": "user",
-    "password": "mydata",
+    "password": "123456",
     "database": "data",
     "collection": "jdData"
 }
