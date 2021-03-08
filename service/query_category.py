@@ -40,36 +40,39 @@ def query_second_cate_products(first_cate):
 
 def category_statistic(first_cate):
     products = data_conn.find(query={'productClass': {'$regex': '^' + first_cate}}).limit(100)
-    mid_price, min_price, max_price, size, sum_price = 0
-    shops = dict()
-    season_cates = dict()
+    prices = dict()  # [sum, max, min, size]
+    shops = dict()  # {'shop_name': num}
+    season_cates = dict()  # {'cate': [spring, summer, autumn, winter]}
     for product in products:
-        size += 1
+        cates = product['productClass'].split('-')
+        if len(cates) < 3:
+            continue
+        second_cate = cates[2]
+
         price = product['price']
-        sum_price += price
-        max_price = price if price > max_price else max_price
-        min_price = price if price < min_price else min_price
+        if price is not None:
+            if second_cate not in prices.keys():
+                prices[second_cate] = np.array([1, 4])
+            prices[second_cate][3] += 1
+            prices[second_cate][1] = price if price > prices[second_cate][1] else prices[second_cate][1]
+            prices[second_cate][2] = price if price < prices[second_cate][2] else prices[second_cate][2]
+            prices[second_cate][0] += price
+
+        if second_cate not in season_cates.keys():
+            season_cates[second_cate] = np.array([1, 4])
+        get_season_cates(season_cates, second_cate, product)
 
         shop = product['shop']
         if shop not in shops:
             shops[shop] = 0
         shops[shop] += 1
 
-        cates = product['productClass'].split('-')
-        if len(cates) < 3:
-            continue
-        second_cate = cates[2]
-        if second_cate not in season_cates.keys():
-            season_cates[second_cate] = np.array([1, 4])
-        get_season_cates(season_cates, second_cate, product)
-    mid_price = sum_price / size
-
 
 def get_season_cates(season_cates, cate, product):
     comments = product['comments']
     for comment in comments:
-        date = comment['date']
-        season = get_season_from_date(date)
+        time = comment['time']
+        season = get_season_from_date(time)
         season_cates[cate][season] += 1
 
 
