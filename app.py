@@ -1,5 +1,5 @@
 from flask import Flask
-import query_category
+from service import query_category
 from result import Result
 import json
 
