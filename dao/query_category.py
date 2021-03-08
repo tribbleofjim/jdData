@@ -1,16 +1,12 @@
 import mongo_conn
+import setting
 
-params = {
-    "host": "101.37.89.200",
-    "port": 27017,
-    "user": "user",
-    "password": "123456",
-    "database": "data",
-    "collection": "jdData"
-}
-conn = mongo_conn.MongoConn(host=params['host'], user=params['user'],
-                            password=params['password'], database=params['database'], collection=params['collection'])
-# first_categories = set()
+conn = mongo_conn.MongoConn(host=setting.mongo_params['host'],
+                            user=setting.mongo_params['user'],
+                            password=setting.mongo_params['password'],
+                            database=setting.mongo_params['database'],
+                            collection=setting.mongo_params['collection'])
+# _first_categories = set()
 _first_categories = {'美妆护肤', '玩具乐器', '运动户外', '手机通讯', '文娱', '母婴', '教育培训', '鞋靴', '宠物生活', '食品饮料', '家具日用',
                      '电脑、办公', '数码', '图书', '汽车用品', '服饰内衣', '医疗保健', '家庭清洁/纸品', '二手商品', '厨具', '农资园艺', '家具',
                      '汽车', '箱包皮具', '礼品', '钟表', '酒类', '个人护理', '家用电器', '生鲜', '本地生活/旅游出行', '家纺', '家装建材'}

@@ -19,7 +19,7 @@ class MongoConn(object):
         self.collection = collection
 
         url = 'mongodb://{}:{}@{}:{}/?authSource={}' \
-            .format(params['user'], params['password'], params['host'], params['port'], params['database'])
+            .format(user, password, host, port, database)
         self.conn = pymongo.MongoClient(url)
         self.db = self.conn[database]
 
@@ -52,19 +52,13 @@ class MongoConn(object):
         return self.db[coll].find_one({'_id': ObjectId(oid)})
 
 
-params = {
-    "host": "101.37.89.200",
-    "port": 27017,
-    "user": "user",
-    "password": "123456",
-    "database": "data",
-    "collection": "jdData"
-}
-
 if __name__ == '__main__':
-    obj = MongoConn(host=params['host'], user=params['user'],
-                    password=params['password'], database=params['database'], collection=params['collection'])
-    rest = obj.find(projection={'productClass': 1, '_id': 0}).limit(100)
-    for productClass in rest:
-        print(productClass)
+    print(111)
+    # obj = MongoConn(host=current_app.config['mongo_params']['host'],
+    #                 user=current_app.config['mongo_params']['user'],
+    #                 password=params['password'], database=params['database'], collection=params['collection'])
+    # rest = obj.find(projection={'productClass': 1, '_id': 0}).limit(100)
+    # for productClass in rest:
+    #     print(productClass)
+
 
