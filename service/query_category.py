@@ -39,8 +39,8 @@ def query_second_cate_products(first_cate):
 
 
 def category_statistic(first_cate):
-    products = data_conn.find(query={'productClass': {'$regex': '^' + first_cate}}).limit(100)
-    prices = dict()  # [sum, max, min, size]
+    products = data_conn.find(query={'productClass': {'$regex': '^' + first_cate}}).limit(20)
+    prices = dict()  # [max, min, sum, size, mid]
     shops = dict()  # {'shop_name': num}
     season_cates = dict()  # {'cate': [spring, summer, autumn, winter]}
     for product in products:
@@ -49,27 +49,37 @@ def category_statistic(first_cate):
             continue
         second_cate = cates[2]
 
-        price = product['price']
+        price = float(product['price'][:-1])
         if price is not None:
             if second_cate not in prices.keys():
-                prices[second_cate] = np.array([1, 4])
-            prices[second_cate][3] += 1
-            prices[second_cate][1] = price if price > prices[second_cate][1] else prices[second_cate][1]
-            prices[second_cate][2] = price if price < prices[second_cate][2] else prices[second_cate][2]
-            prices[second_cate][0] += price
+                prices[second_cate] = np.array([0., 1000000., 0., 0, 0.])
+            second_cate_data = prices[second_cate]
+            if price > second_cate_data[0]:
+                second_cate_data[0] = price
+            if price < second_cate_data[1]:
+                second_cate_data[1] = price
+            second_cate_data[2] += price
+            second_cate_data[3] += 1
+            second_cate_data[4] = second_cate_data[2] / second_cate_data[3]
+            # print(second_cate_data)
 
         if second_cate not in season_cates.keys():
-            season_cates[second_cate] = np.array([1, 4])
+            season_cates[second_cate] = np.array([0, 0, 0, 0])
         get_season_cates(season_cates, second_cate, product)
+        # print(season_cates[second_cate])
 
         shop = product['shop']
         if shop not in shops:
             shops[shop] = 0
         shops[shop] += 1
+        # print("shops: {}", shops[shop])
+    print(prices)
+    print(shops)
+    print(season_cates)
 
 
 def get_season_cates(season_cates, cate, product):
-    comments = product['comments']
+    comments = product['commentList']
     for comment in comments:
         time = comment['time']
         season = get_season_from_date(time)
@@ -81,7 +91,7 @@ def get_season_from_date(date):
         try:
             month = date.split('-')[1]
             if month.startswith('0'):
-                month = month[1::]
+                month = month[1:]
             m = int(month)
             if 1 <= m <= 3:
                 return 0
@@ -97,6 +107,5 @@ def get_season_from_date(date):
 
 
 if __name__ == '__main__':
-    res = query_second_cate_products('手机通讯')
-    for prod in res:
-        print(prod)
+    category_statistic('美妆护肤')
+
