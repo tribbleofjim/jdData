@@ -1,5 +1,6 @@
 import mongo_conn
 import setting
+from array import array
 import numpy as np
 
 data_conn = mongo_conn.MongoConn(host=setting.mongo_params['host'],
@@ -33,16 +34,40 @@ def query_first_categories():
     return _first_categories
 
 
-def query_second_cate_products(first_cate):
-    products = data_conn.find(query={'productClass': {'$regex': '^' + first_cate}}).limit(100)
-    return products
-
-
-def category_statistic(first_cate):
-    products = data_conn.find(query={'productClass': {'$regex': '^' + first_cate}}).limit(20)
+def get_category_statistic(first_cate, batch_size):
     prices = dict()  # [max, min, sum, size, mid]
     shops = dict()  # {'shop_name': num}
     season_cates = dict()  # {'cate': [spring, summer, autumn, winter]}
+    skip_num = 0
+    product_list = ['']
+    # i = 0
+    while len(product_list) > 0:
+        # while i < 1:
+        product_list = list(data_conn.find(query={'productClass': {'$regex': '^' + first_cate}})
+                            .skip(skip_num).limit(batch_size))
+        category_statistic(product_list, prices, shops, season_cates)
+        skip_num += batch_size
+        # i += 1
+
+    array_to_list(prices)
+    array_to_list(season_cates)
+
+    analyze_data = {
+        'first_cate': first_cate,
+        'prices': prices,
+        'shops': shops,
+        'season_cates': season_cates
+    }
+    analyze_conn.add_one(data=analyze_data)
+
+
+def array_to_list(target_dict):
+    for key, value in target_dict.items():
+        value = list(value)
+        target_dict[key] = value
+
+
+def category_statistic(products, prices, shops, season_cates):
     for product in products:
         cates = product['productClass'].split('-')
         if len(cates) < 3:
@@ -52,7 +77,7 @@ def category_statistic(first_cate):
         price = float(product['price'][:-1])
         if price is not None:
             if second_cate not in prices.keys():
-                prices[second_cate] = np.array([0., 1000000., 0., 0, 0.])
+                prices[second_cate] = array('f', [0., 1000000., 0., 0., 0.])
             second_cate_data = prices[second_cate]
             if price > second_cate_data[0]:
                 second_cate_data[0] = price
@@ -61,18 +86,17 @@ def category_statistic(first_cate):
             second_cate_data[2] += price
             second_cate_data[3] += 1
             second_cate_data[4] = second_cate_data[2] / second_cate_data[3]
-            # print(second_cate_data)
 
         if second_cate not in season_cates.keys():
-            season_cates[second_cate] = np.array([0, 0, 0, 0])
+            season_cates[second_cate] = array('i', [0, 0, 0, 0])
         get_season_cates(season_cates, second_cate, product)
-        # print(season_cates[second_cate])
 
         shop = product['shop']
+        if shop.find('.') != -1:
+            shop = shop.replace('.', '')
         if shop not in shops:
             shops[shop] = 0
         shops[shop] += 1
-        # print("shops: {}", shops[shop])
     print(prices)
     print(shops)
     print(season_cates)
@@ -107,5 +131,4 @@ def get_season_from_date(date):
 
 
 if __name__ == '__main__':
-    category_statistic('美妆护肤')
-
+    get_category_statistic('美妆护肤', 100)
