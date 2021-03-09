@@ -1,7 +1,7 @@
 import mongo_conn
 import setting
 from array import array
-import numpy as np
+import _thread
 
 data_conn = mongo_conn.MongoConn(host=setting.mongo_params['host'],
                                  user=setting.mongo_params['user'],
@@ -34,7 +34,15 @@ def query_first_categories():
     return _first_categories
 
 
-def get_category_statistic(first_cate, batch_size):
+def query_category_data(first_cate):
+    cate_data = analyze_conn.find_one(query={'first_cate': {'$regex': '^' + first_cate}})
+    if cate_data is None:
+        _thread.start_new_thread(__get_category_statistic, (first_cate, 100))
+        return "很抱歉，当前分类的数据暂时未计算"
+    return cate_data
+
+
+def __get_category_statistic(first_cate, batch_size):
     prices = dict()  # [max, min, sum, size, mid]
     shops = dict()  # {'shop_name': num}
     season_cates = dict()  # {'cate': [spring, summer, autumn, winter]}
@@ -45,12 +53,12 @@ def get_category_statistic(first_cate, batch_size):
         # while i < 1:
         product_list = list(data_conn.find(query={'productClass': {'$regex': '^' + first_cate}})
                             .skip(skip_num).limit(batch_size))
-        category_statistic(product_list, prices, shops, season_cates)
+        __category_statistic(product_list, prices, shops, season_cates)
         skip_num += batch_size
         # i += 1
 
-    array_to_list(prices)
-    array_to_list(season_cates)
+    __array_to_list(prices)
+    __array_to_list(season_cates)
 
     analyze_data = {
         'first_cate': first_cate,
@@ -61,13 +69,13 @@ def get_category_statistic(first_cate, batch_size):
     analyze_conn.add_one(data=analyze_data)
 
 
-def array_to_list(target_dict):
+def __array_to_list(target_dict):
     for key, value in target_dict.items():
         value = list(value)
         target_dict[key] = value
 
 
-def category_statistic(products, prices, shops, season_cates):
+def __category_statistic(products, prices, shops, season_cates):
     for product in products:
         cates = product['productClass'].split('-')
         if len(cates) < 3:
@@ -89,7 +97,7 @@ def category_statistic(products, prices, shops, season_cates):
 
         if second_cate not in season_cates.keys():
             season_cates[second_cate] = array('i', [0, 0, 0, 0])
-        get_season_cates(season_cates, second_cate, product)
+        __get_season_cates(season_cates, second_cate, product)
 
         shop = product['shop']
         if shop.find('.') != -1:
@@ -102,15 +110,15 @@ def category_statistic(products, prices, shops, season_cates):
     print(season_cates)
 
 
-def get_season_cates(season_cates, cate, product):
+def __get_season_cates(season_cates, cate, product):
     comments = product['commentList']
     for comment in comments:
         time = comment['time']
-        season = get_season_from_date(time)
+        season = __get_season_from_date(time)
         season_cates[cate][season] += 1
 
 
-def get_season_from_date(date):
+def __get_season_from_date(date):
     if date is not None:
         try:
             month = date.split('-')[1]
@@ -131,4 +139,4 @@ def get_season_from_date(date):
 
 
 if __name__ == '__main__':
-    get_category_statistic('美妆护肤', 100)
+    __get_category_statistic('美妆护肤', 100)

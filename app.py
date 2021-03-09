@@ -13,5 +13,12 @@ def categories():
     return json.dumps(dic, ensure_ascii=False)
 
 
+@app.route('/category/<first_cate>')
+def category_data(first_cate):
+    cate_data = query_category.query_category_data(first_cate)
+    # todo: 处理cate_data
+    return 0
+
+
 if __name__ == "__main__":
     app.run()
