@@ -48,9 +48,12 @@ def query_category_price_data(first_cate):
         cate_data = _query_category_data(first_cate)
         prices = cate_data['prices']
         res = sorted(prices.items(), key=lambda item: item[1][3], reverse=True)[:10]
+        for cate in res:
+            for i in range(0, 5):
+                cate[1][i] = round(cate[1][i], 2)
         analyze_conn.add_one({
             'first_cate': first_cate,
-            'price_data': top_ten_cates
+            'price_data': res
         })
         return res
     return res['price_data']
@@ -185,7 +188,7 @@ def __get_season_from_date(date):
 if __name__ == '__main__':
     _first_cate = '美妆护肤'
     top_ten_cates = query_category_price_data(_first_cate)
-    cates = [x[0] for x in top_ten_cates]
-    r = query_category_time_data(_first_cate, cates)
-    for i in r:
-        print(i)
+    # cates = [x[0] for x in top_ten_cates]
+    # r = query_category_time_data(_first_cate, cates)
+    # for idx in r:
+    #     print(idx)
