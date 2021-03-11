@@ -19,7 +19,6 @@ def category_price_data(first_cate):
     data_values = list()
     for data in price_data:
         data_values.append(data[1])
-    # data_values = price_data.values()
 
     res = {
         'cates': [x[0] for x in price_data],
@@ -44,14 +43,15 @@ def category_brand_data(first_cate):
     res = {
         'shops': shops,
         'shops_data': shops_data,
-        'core_items': shops_data[:5]
+        'core_items': shops[:5]
     }
     return json.dumps(res, ensure_ascii=False)
 
 
 @app.route('/category/time/<first_cate>')
 def category_time_data(first_cate):
-    time_data = query_category.query_category_time_data(first_cate)
+    top_ten_cate = query_category.query_category_price_data(first_cate)
+    time_data = query_category.query_category_time_data(first_cate, top_ten_cate)
     time_data.insert(0, ['product', 'spring', 'summer', 'autumn', 'winter'])
     res = {
         'data': time_data

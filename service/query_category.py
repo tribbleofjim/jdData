@@ -81,12 +81,17 @@ def query_category_time_data(first_cate, top_ten_cate):
         res = list()
         for cate, items in season_cates.items():
             if cate in top_ten_cate:
-                res.append({cate: items})
+                lst = list()
+                lst.append(cate)
+                for x in items:
+                    lst.append(x)
+                res.append(lst)
         analyze_conn.add_one({
             'first_cate': first_cate,
             'time_data': res
         })
-    return res
+        return res
+    return res['time_data']
 
 
 def __get_category_statistic(first_cate, batch_size):
@@ -188,7 +193,7 @@ def __get_season_from_date(date):
 if __name__ == '__main__':
     _first_cate = '美妆护肤'
     top_ten_cates = query_category_price_data(_first_cate)
-    # cates = [x[0] for x in top_ten_cates]
-    # r = query_category_time_data(_first_cate, cates)
-    # for idx in r:
-    #     print(idx)
+    cates = [x[0] for x in top_ten_cates]
+    r = query_category_time_data(_first_cate, cates)
+    for idx in r:
+        print(idx)
