@@ -34,13 +34,15 @@ def category_price_data(first_cate):
 def category_brand_data(first_cate):
     brand_data = query_category.query_category_brand_data(first_cate)
     shops_data = list()
-    for shop, num in shops_data.items():
+    shops = list()
+    for item in brand_data:
         shops_data.append({
-            'name': shop,
-            'value': num
+            'name': item[0],
+            'value': item[1]
         })
+        shops.append(item[0])
     res = {
-        'shops': brand_data.keys(),
+        'shops': shops,
         'shops_data': shops_data,
         'core_items': shops_data[:5]
     }

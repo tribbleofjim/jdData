@@ -64,7 +64,7 @@ def query_category_brand_data(first_cate):
     if res is None:
         cate_data = _query_category_data(first_cate)
         shops = cate_data['shops']
-        res = sorted(shops.items(), key=lambda item: item[1][3], reverse=True)[:10]
+        res = sorted(shops.items(), key=lambda item: item[1], reverse=True)[:10]
         analyze_conn.add_one({
             'first_cate': first_cate,
             'brand_data': res
