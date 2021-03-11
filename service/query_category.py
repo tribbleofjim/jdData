@@ -34,12 +34,56 @@ def query_first_categories():
     return _first_categories
 
 
-def query_category_data(first_cate):
+def _query_category_data(first_cate):
     cate_data = analyze_conn.find_one(query={'first_cate': {'$regex': '^' + first_cate}})
     if cate_data is None:
         _thread.start_new_thread(__get_category_statistic, (first_cate, 100))
         return "很抱歉，当前分类的数据暂时未计算"
     return cate_data
+
+
+def query_category_price_data(first_cate):
+    res = analyze_conn.find_one(query={'first_cate': {'$regex': '^' + first_cate}, 'price_data': {'$exists': True}})
+    if res is None:
+        cate_data = _query_category_data(first_cate)
+        prices = cate_data['prices']
+        res = sorted(prices.items(), key=lambda item: item[1][3], reverse=True)[:10]
+        analyze_conn.add_one({
+            'first_cate': first_cate,
+            'price_data': top_ten_cates
+        })
+        return res
+    return res['price_data']
+
+
+def query_category_brand_data(first_cate):
+    res = analyze_conn.find_one(query={'first_cate': {'$regex': '^' + first_cate}, 'brand_data': {'$exists': True}})
+    if res is None:
+        cate_data = _query_category_data(first_cate)
+        shops = cate_data['shops']
+        res = sorted(shops.items(), key=lambda item: item[1][3], reverse=True)[:10]
+        analyze_conn.add_one({
+            'first_cate': first_cate,
+            'brand_data': res
+        })
+        return res
+    return res['brand_data']
+
+
+def query_category_time_data(first_cate, top_ten_cate):
+    res = analyze_conn.find_one(query={'first_cate': {'$regex': '^' + first_cate}, 'time_data': {'$exists': True}})
+    if res is None:
+        cate_data = _query_category_data(first_cate)
+        season_cates = cate_data['season_cates']
+        res = list()
+        for cate, items in season_cates.items():
+            if cate in top_ten_cate:
+                res.append({cate: items})
+        analyze_conn.add_one({
+            'first_cate': first_cate,
+            'time_data': res
+        })
+    return res
 
 
 def __get_category_statistic(first_cate, batch_size):
@@ -139,4 +183,9 @@ def __get_season_from_date(date):
 
 
 if __name__ == '__main__':
-    __get_category_statistic('美妆护肤', 100)
+    first_cate = '美妆护肤'
+    top_ten_cates = query_category_price_data(first_cate)
+    cates = [x[0] for x in top_ten_cates]
+    r = query_category_time_data(first_cate, cates)
+    for i in r:
+        print(i)

@@ -13,10 +13,11 @@ def categories():
     return json.dumps(dic, ensure_ascii=False)
 
 
-@app.route('/category/<first_cate>')
-def category_data(first_cate):
-    cate_data = query_category.query_category_data(first_cate)
-    # todo: 处理cate_data
+@app.route('/category/price/<first_cate>')
+def category_price_data(first_cate):
+
+
+
     return 0
 
 
