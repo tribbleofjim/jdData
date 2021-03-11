@@ -183,9 +183,9 @@ def __get_season_from_date(date):
 
 
 if __name__ == '__main__':
-    first_cate = '美妆护肤'
-    top_ten_cates = query_category_price_data(first_cate)
+    _first_cate = '美妆护肤'
+    top_ten_cates = query_category_price_data(_first_cate)
     cates = [x[0] for x in top_ten_cates]
-    r = query_category_time_data(first_cate, cates)
+    r = query_category_time_data(_first_cate, cates)
     for i in r:
         print(i)

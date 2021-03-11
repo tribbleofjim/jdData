@@ -15,10 +15,32 @@ def categories():
 
 @app.route('/category/price/<first_cate>')
 def category_price_data(first_cate):
+    price_data = query_category.query_category_price_data(first_cate)
+    data_values = price_data.values()
+    res = {
+        'cates': price_data.keys(),
+        'max_values': [x[0] for x in data_values],
+        'min_values': [x[1] for x in data_values],
+        'mid_values': [x[4] for x in data_values]
+    }
+    return json.dumps(res, ensure_ascii=False)
 
 
-
-    return 0
+@app.route('/category/brand/<first_cate>')
+def category_brand_data(first_cate):
+    brand_data = query_category.query_category_brand_data(first_cate)
+    shops_data = list()
+    for shop, num in shops_data.items():
+        shops_data.append({
+            'name': shop,
+            'value': num
+        })
+    res = {
+        'shops': brand_data.keys(),
+        'shops_data': shops_data,
+        'core_items': shops_data[:5]
+    }
+    return json.dumps(res, ensure_ascii=False)
 
 
 if __name__ == "__main__":
