@@ -1,7 +1,18 @@
 import jieba.analyse
+import mongo_conn
+import setting
 
 
-def get_good_words():
+data_conn = mongo_conn.MongoConn(host=setting.mongo_params['host'],
+                                 user=setting.mongo_params['user'],
+                                 password=setting.mongo_params['password'],
+                                 database=setting.mongo_params['database'],
+                                 collection=setting.mongo_params['data_collection'])
+
+jieba.analyse.set_stop_words("./text_words/baidu_stopwords.txt")
+
+
+def jieba_test():
     jieba.analyse.set_stop_words("./text_words/baidu_stopwords.txt")
     sentence = ''
     with open('./text_words/jieba_test', 'r', encoding='utf-8') as file:
@@ -15,5 +26,28 @@ def get_good_words():
     return 0
 
 
+def get_good_words(sku_id):
+    item = data_conn.find_one({'skuId': sku_id})
+    comments = item['commentList']
+    sentence = ''
+    for comment in comments:
+        if comment['star'] >= 3:
+            sentence += comment['content']
+    words = jieba.analyse.textrank(sentence, topK=10, withWeight=True)
+    return [[x[0], round(x[1], 3) * 1000] for x in words]
+
+
+def get_bad_words(sku_id):
+    item = data_conn.find_one({'skuId': sku_id})
+    comments = item['commentList']
+    sentence = ''
+    for comment in comments:
+        if comment['star'] < 3:
+            sentence += comment['content']
+    words = jieba.analyse.textrank(sentence, topK=10, withWeight=True)
+    return [[x[0], round(x[1], 3) * 1000] for x in words]
+
+
 if __name__ == '__main__':
-    get_good_words()
+    res = get_bad_words('100014348492')
+    print(res)
