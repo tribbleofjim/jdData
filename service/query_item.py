@@ -26,6 +26,12 @@ def jieba_test():
     return 0
 
 
+def get_item_info(sku_id):
+    item = data_conn.find_one({'skuId': sku_id}, projection={'_id': 0})
+    del item['commentList']
+    return item
+
+
 def get_good_words(sku_id):
     item = data_conn.find_one({'skuId': sku_id})
     comments = item['commentList']
@@ -49,5 +55,5 @@ def get_bad_words(sku_id):
 
 
 if __name__ == '__main__':
-    res = get_bad_words('100014348492')
-    print(res)
+    my_res = get_item_info('100014348492')
+    print(my_res)
