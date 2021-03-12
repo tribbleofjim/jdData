@@ -102,12 +102,10 @@ def __get_category_statistic(first_cate, batch_size):
     product_list = ['']
     # i = 0
     while len(product_list) > 0:
-        # while i < 1:
         product_list = list(data_conn.find(query={'productClass': {'$regex': '^' + first_cate}})
                             .skip(skip_num).limit(batch_size))
         __category_statistic(product_list, prices, shops, season_cates)
         skip_num += batch_size
-        # i += 1
 
     __array_to_list(prices)
     __array_to_list(season_cates)
