@@ -1,6 +1,7 @@
 import jieba.analyse
 import mongo_conn
 import redis
+import ast
 import setting
 
 
@@ -12,7 +13,7 @@ data_conn = mongo_conn.MongoConn(host=setting.mongo_params['host'],
 
 r = redis.Redis(host='127.0.0.1', port=6379, decode_responses=True)
 
-jieba.analyse.set_stop_words("./text_words/baidu_stopwords.txt")
+jieba.analyse.set_stop_words("./service/text_words/baidu_stopwords.txt")
 
 
 def jieba_test():
@@ -60,8 +61,10 @@ def get_bad_words(sku_id):
 def _get_item_from_redis(sku_id):
     item = r.get(sku_id)
     if item is None:
-        item = data_conn.find_one({'skuId': sku_id})
+        item = data_conn.find_one(query={'skuId': sku_id}, projection={'_id': 0})
         r.set(sku_id, item)
+    else:
+        item = ast.literal_eval(item)
     r.expire(sku_id, 1800)
     return item
 

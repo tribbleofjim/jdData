@@ -7,6 +7,7 @@ from result import Result
 import json
 
 app = Flask(__name__)
+default_size = 20
 
 
 @app.route('/categories')
@@ -90,6 +91,8 @@ def item_bads():
 def item_search():
     keyword = request.args.get('keyword')
     size = request.args.get('size')
+    if size is None:
+        size = default_size
     res = search_item.search_items(keyword, size)
     return json.dumps(res, ensure_ascii=False)
 
