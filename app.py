@@ -1,5 +1,8 @@
 from flask import Flask
+from flask import request
 from service import query_category
+from service import query_item
+from service import search_item
 from result import Result
 import json
 
@@ -13,8 +16,9 @@ def categories():
     return json.dumps(dic, ensure_ascii=False)
 
 
-@app.route('/category/price/<first_cate>')
-def category_price_data(first_cate):
+@app.route('/category/price')
+def category_price_data():
+    first_cate = request.args.get('category')
     price_data = query_category.query_category_price_data(first_cate)
     data_values = list()
     for data in price_data:
@@ -29,8 +33,9 @@ def category_price_data(first_cate):
     return json.dumps(res, ensure_ascii=False)
 
 
-@app.route('/category/brand/<first_cate>')
-def category_brand_data(first_cate):
+@app.route('/category/brand')
+def category_brand_data():
+    first_cate = request.args.get('category')
     brand_data = query_category.query_category_brand_data(first_cate)
     shops_data = list()
     shops = list()
@@ -48,14 +53,44 @@ def category_brand_data(first_cate):
     return json.dumps(res, ensure_ascii=False)
 
 
-@app.route('/category/time/<first_cate>')
-def category_time_data(first_cate):
+@app.route('/category/time')
+def category_time_data():
+    first_cate = request.args.get('category')
     top_ten_cate = query_category.query_category_price_data(first_cate)
     time_data = query_category.query_category_time_data(first_cate, top_ten_cate)
     time_data.insert(0, ['product', 'spring', 'summer', 'autumn', 'winter'])
     res = {
         'data': time_data
     }
+    return json.dumps(res, ensure_ascii=False)
+
+
+@app.route('/item/info')
+def item_info():
+    sku_id = request.args.get('skuId')
+    res = query_item.get_item_info(sku_id)
+    return json.dumps(res, ensure_ascii=False)
+
+
+@app.route('/item/goods')
+def item_goods():
+    sku_id = request.args.get('skuId')
+    res = query_item.get_good_words(sku_id)
+    return json.dumps(res, ensure_ascii=False)
+
+
+@app.route('/item/bads')
+def item_bads():
+    sku_id = request.args.get('skuId')
+    res = query_item.get_bad_words(sku_id)
+    return json.dumps(res, ensure_ascii=False)
+
+
+@app.route('/item/search')
+def item_search():
+    keyword = request.args.get('keyword')
+    size = request.args.get('size')
+    res = search_item.search_items(keyword, size)
     return json.dumps(res, ensure_ascii=False)
 
 
