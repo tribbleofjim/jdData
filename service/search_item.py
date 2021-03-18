@@ -4,9 +4,15 @@ es = Elasticsearch()
 
 index = 'jingdong'
 
-if __name__ == '__main__':
-    res = es.search(index=index, body={'query': {'match': {'title': '充电宝'}},
+
+def search_items(keyword, size):
+    res = es.search(index=index, body={'query': {'match': {'title': keyword}},
                                        '_source': ['title', 'price', 'productClass', 'skuId'],
-                                       'size': 20})
-    for hit in res['hits']['hits']:
-        print(hit)
+                                       'size': size})
+    return [x['_source'] for x in res['hits']['hits']]
+
+
+if __name__ == '__main__':
+    test_res = search_items('洗衣机', 20)
+    for test_r in test_res:
+        print(test_r)
