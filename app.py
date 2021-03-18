@@ -46,10 +46,12 @@ def category_brand_data():
             'value': item[1]
         })
         shops.append(item[0])
+    core_items = shops_data[:3]
+    core_items[0]['selected'] = True
     res = {
         'shops': shops,
         'shops_data': shops_data,
-        'core_items': shops[:5]
+        'core_items': core_items
     }
     return json.dumps(res, ensure_ascii=False)
 
