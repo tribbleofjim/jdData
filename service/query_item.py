@@ -15,11 +15,10 @@ data_conn = mongo_conn.MongoConn(host=setting.mongo_params['host'],
 
 r = redis.Redis(host='127.0.0.1', port=6379, decode_responses=True)
 
-jieba.analyse.set_stop_words("./text_words/baidu_stopwords.txt")
+jieba.analyse.set_stop_words(setting.stopwords_path)
 
 
 def jieba_test():
-    jieba.analyse.set_stop_words(setting.stopwords_path)
     sentence = ''
     with open('./text_words/jieba_test', 'r', encoding='utf-8') as file:
         for line in file.readlines():
@@ -45,6 +44,8 @@ def get_item_season_data(sku_id):
     item_data = list()
     cate_idx = -1
     for cate, data in season_data.items():
+        if cate == '' or None:
+            cate = '普通版'
         if cate not in categories:
             categories.append(cate)
             cate_idx += 1
@@ -64,7 +65,7 @@ def get_good_words(sku_id):
         if comment['star'] >= 3:
             sentence += comment['content']
     words = jieba.analyse.textrank(sentence, topK=10, withWeight=True)
-    return [[x[0], round(x[1], 3) * 1000] for x in words]
+    return [{'name': x[0], 'value': round(x[1], 2) * 100} for x in words]
 
 
 def get_bad_words(sku_id):
@@ -75,7 +76,7 @@ def get_bad_words(sku_id):
         if comment['star'] < 3:
             sentence += comment['content']
     words = jieba.analyse.textrank(sentence, topK=10, withWeight=True)
-    return [[x[0], round(x[1], 3) * 1000] for x in words]
+    return [{'name': x[0], 'value': round(x[1], 2) * 100} for x in words]
 
 
 def __get_item_from_redis(sku_id):
