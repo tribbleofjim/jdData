@@ -75,6 +75,13 @@ def item_info():
     return json.dumps(res, ensure_ascii=False)
 
 
+@app.route('/item/data')
+def item_data():
+    sku_id = request.args.get('skuId')
+    res = query_item.get_item_season_data(sku_id)
+    return json.dumps(res, ensure_ascii=False)
+
+
 @app.route('/item/goods')
 def item_goods():
     sku_id = request.args.get('skuId')

@@ -15,11 +15,11 @@ data_conn = mongo_conn.MongoConn(host=setting.mongo_params['host'],
 
 r = redis.Redis(host='127.0.0.1', port=6379, decode_responses=True)
 
-jieba.analyse.set_stop_words("./service/text_words/baidu_stopwords.txt")
+jieba.analyse.set_stop_words("./text_words/baidu_stopwords.txt")
 
 
 def jieba_test():
-    jieba.analyse.set_stop_words("./text_words/baidu_stopwords.txt")
+    jieba.analyse.set_stop_words(setting.stopwords_path)
     sentence = ''
     with open('./text_words/jieba_test', 'r', encoding='utf-8') as file:
         for line in file.readlines():
@@ -112,5 +112,6 @@ def __get_item_data(item):
 
 
 if __name__ == '__main__':
-    my_res = get_item_info('100014348492')
-    print(my_res)
+    print(get_item_season_data('100014348492'))
+    # my_res = get_item_info('100014348492')
+    # print(my_res)
