@@ -1,5 +1,6 @@
 import mongo_conn
 import setting
+import util
 from array import array
 import _thread
 
@@ -107,8 +108,8 @@ def __get_category_statistic(first_cate, batch_size):
         __category_statistic(product_list, prices, shops, season_cates)
         skip_num += batch_size
 
-    __array_to_list(prices)
-    __array_to_list(season_cates)
+    util.array_to_list(prices)
+    util.array_to_list(season_cates)
 
     analyze_data = {
         'first_cate': first_cate,
@@ -117,12 +118,6 @@ def __get_category_statistic(first_cate, batch_size):
         'season_cates': season_cates
     }
     analyze_conn.add_one(data=analyze_data)
-
-
-def __array_to_list(target_dict):
-    for key, value in target_dict.items():
-        value = list(value)
-        target_dict[key] = value
 
 
 def __category_statistic(products, prices, shops, season_cates):
@@ -164,28 +159,8 @@ def __get_season_cates(season_cates, cate, product):
     comments = product['commentList']
     for comment in comments:
         time = comment['time']
-        season = __get_season_from_date(time)
+        season = util.get_season_from_date(time)
         season_cates[cate][season] += 1
-
-
-def __get_season_from_date(date):
-    if date is not None:
-        try:
-            month = date.split('-')[1]
-            if month.startswith('0'):
-                month = month[1:]
-            m = int(month)
-            if 1 <= m <= 3:
-                return 0
-            elif 4 <= m <= 6:
-                return 1
-            elif 7 <= m <= 9:
-                return 2
-            else:
-                return 3
-        except IndexError as e:
-            print(e)
-            return 0
 
 
 if __name__ == '__main__':
