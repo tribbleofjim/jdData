@@ -60,23 +60,39 @@ def get_item_season_data(sku_id):
 def get_good_words(sku_id):
     item = __get_item_from_redis(sku_id)
     comments = item['commentList']
+    res_comments = list()
+    idx = 0
     sentence = ''
     for comment in comments:
         if comment['star'] >= 3:
             sentence += comment['content']
-    words = jieba.analyse.textrank(sentence, topK=10, withWeight=True)
-    return [{'name': x[0], 'value': round(x[1], 2) * 100} for x in words]
+            if idx < 5:
+                res_comments.append(comment)
+                idx += 1
+    words = jieba.analyse.textrank(sentence, topK=20, withWeight=True)
+    return {
+        'words': [{'name': x[0], 'value': round(x[1], 2) * 100} for x in words],
+        'comments': res_comments
+    }
 
 
 def get_bad_words(sku_id):
     item = __get_item_from_redis(sku_id)
     comments = item['commentList']
+    res_comments = list()
+    idx = 0
     sentence = ''
     for comment in comments:
-        if comment['star'] < 3:
+        if comment['star'] <= 3:
             sentence += comment['content']
-    words = jieba.analyse.textrank(sentence, topK=10, withWeight=True)
-    return [{'name': x[0], 'value': round(x[1], 2) * 100} for x in words]
+            if idx < 5:
+                res_comments.append(comment)
+                idx += 1
+    words = jieba.analyse.textrank(sentence, topK=20, withWeight=True)
+    return {
+        'words': [{'name': x[0], 'value': round(x[1], 2) * 100} for x in words],
+        'comments': res_comments
+    }
 
 
 def __get_item_from_redis(sku_id):
