@@ -64,9 +64,10 @@ def get_good_words(sku_id):
     idx = 0
     sentence = ''
     for comment in comments:
-        if comment['star'] >= 3:
+        if comment['star'] > 3:
             sentence += comment['content']
             if idx < 5:
+                comment['isPlus'] = '是' if comment['isPlus'] else '否'
                 res_comments.append(comment)
                 idx += 1
     words = jieba.analyse.textrank(sentence, topK=20, withWeight=True)
@@ -86,6 +87,7 @@ def get_bad_words(sku_id):
         if comment['star'] <= 3:
             sentence += comment['content']
             if idx < 5:
+                comment['isPlus'] = '是' if comment['isPlus'] else '否'
                 res_comments.append(comment)
                 idx += 1
     words = jieba.analyse.textrank(sentence, topK=20, withWeight=True)
