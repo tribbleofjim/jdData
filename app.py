@@ -46,7 +46,8 @@ def category_brand_data():
         })
         shops.append(item[0])
     core_items = shops_data[:3]
-    core_items[0]['selected'] = True
+    if len(core_items) >= 1:
+        core_items[0]['selected'] = True
     res = {
         'shops': shops,
         'shops_data': shops_data,
