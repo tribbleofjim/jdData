@@ -36,7 +36,7 @@ def query_first_categories():
 
 
 def _query_category_data(first_cate):
-    cate_data = analyze_conn.find_one(query={'first_cate': {'$regex': '^' + first_cate}})
+    cate_data = analyze_conn.find_one(query={'first_cate': {'$regex': '^' + first_cate}, 'all_sum': {'$exists': True}})
     if cate_data is None:
         _thread.start_new_thread(__get_category_statistic, (first_cate, 100))
         return "很抱歉，当前分类的数据暂时未计算"
@@ -119,7 +119,8 @@ def __get_category_statistic(first_cate, batch_size):
         'prices': prices,
         'shops': shops,
         'season_cates': season_cates,
-        'sell_count': sell_count
+        'sell_count': sell_count,
+        'all_sum': True
     }
     analyze_conn.add_one(data=analyze_data)
 

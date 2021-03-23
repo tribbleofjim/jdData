@@ -43,6 +43,6 @@ def __get_interval(price_interval):
 
 
 if __name__ == '__main__':
-    test_res = search_items('洗衣机', 20, '100-2000')
+    test_res = search_items('口红', 10, '100-2000')
     for test_r in test_res:
         print(test_r)
