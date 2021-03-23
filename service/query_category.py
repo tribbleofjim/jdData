@@ -99,14 +99,17 @@ def __get_category_statistic(first_cate, batch_size):
     prices = dict()  # [max, min, sum, size, mid]
     shops = dict()  # {'shop_name': num}
     season_cates = dict()  # {'cate': [spring, summer, autumn, winter]}
+    sell_count = [1, 2147483647]  # [max_sell_count, min_sell_count]
     skip_num = 0
     product_list = ['']
-    # i = 0
+    i = 0
     while len(product_list) > 0:
         product_list = list(data_conn.find(query={'productClass': {'$regex': '^' + first_cate}})
                             .skip(skip_num).limit(batch_size))
-        __category_statistic(product_list, prices, shops, season_cates)
+        __category_statistic(product_list, prices, shops, season_cates, sell_count)
+        i += 1
         skip_num += batch_size
+        print('====== batch:' + str(i) + ', num:' + str(skip_num) + ' =====')
 
     util.array_to_list(prices)
     util.array_to_list(season_cates)
@@ -115,17 +118,23 @@ def __get_category_statistic(first_cate, batch_size):
         'first_cate': first_cate,
         'prices': prices,
         'shops': shops,
-        'season_cates': season_cates
+        'season_cates': season_cates,
+        'sell_count': sell_count
     }
     analyze_conn.add_one(data=analyze_data)
 
 
-def __category_statistic(products, prices, shops, season_cates):
+def __category_statistic(products, prices, shops, season_cates, sell_count):
     for product in products:
         cates = product['productClass'].split('-')
         if len(cates) < 3:
             continue
         second_cate = cates[2]
+
+        product_sell_count = util.get_sell_count(product['sellCount'])
+        if product_sell_count > 0:
+            sell_count[0] = max(sell_count[0], product_sell_count)
+            sell_count[1] = min(sell_count[1], product_sell_count)
 
         price = float(product['price'][:-1])
         if price is not None:
@@ -150,9 +159,6 @@ def __category_statistic(products, prices, shops, season_cates):
         if shop not in shops:
             shops[shop] = 0
         shops[shop] += 1
-    print(prices)
-    print(shops)
-    print(season_cates)
 
 
 def __get_season_cates(season_cates, cate, product):
@@ -165,8 +171,4 @@ def __get_season_cates(season_cates, cate, product):
 
 if __name__ == '__main__':
     _first_cate = '美妆护肤'
-    top_ten_cates = query_category_price_data(_first_cate)
-    cates = [x[0] for x in top_ten_cates]
-    r = query_category_time_data(_first_cate, cates)
-    for idx in r:
-        print(idx)
+    __get_category_statistic(_first_cate, 100)
