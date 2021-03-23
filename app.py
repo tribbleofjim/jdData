@@ -58,7 +58,7 @@ def category_brand_data():
 @app.route('/category/time')
 def category_time_data():
     first_cate = request.args.get('category')
-    top_ten_cate = query_category.query_category_price_data(first_cate)
+    top_ten_cate = [x[0] for x in query_category.query_category_price_data(first_cate)]
     time_data = query_category.query_category_time_data(first_cate, top_ten_cate)
     time_data.insert(0, ['product', 'spring', 'summer', 'autumn', 'winter'])
     res = {

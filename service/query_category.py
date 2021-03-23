@@ -16,9 +16,9 @@ analyze_conn = mongo_conn.MongoConn(host=setting.mongo_params['host'],
                                     database=setting.mongo_params['database'],
                                     collection=setting.mongo_params['analyze_collection'])
 # _first_categories = set()
-_first_categories = {'美妆护肤', '玩具乐器', '运动户外', '手机通讯', '文娱', '母婴', '教育培训', '鞋靴', '宠物生活', '食品饮料', '家具日用',
-                     '电脑、办公', '数码', '图书', '汽车用品', '服饰内衣', '医疗保健', '家庭清洁/纸品', '二手商品', '厨具', '农资园艺', '家具',
-                     '汽车', '箱包皮具', '礼品', '钟表', '酒类', '个人护理', '家用电器', '生鲜', '本地生活/旅游出行', '家纺', '家装建材'}
+_first_categories = {'美妆护肤', '农资园艺', '教育培训', '家具日用', '礼品', '图书', '玩具乐器', '手机通讯', '文娱', '母婴', '鞋靴', '宠物生活', '食品饮料',
+                     '电脑、办公', '数码', '汽车用品', '服饰内衣', '医疗保健', '家庭清洁/纸品', '二手商品', '厨具', '家具', '运动户外',
+                     '汽车', '箱包皮具', '钟表', '酒类', '个人护理', '家用电器', '生鲜', '本地生活/旅游出行', '家纺', '家装建材'}
 
 
 def query_first_categories():
@@ -109,7 +109,7 @@ def __get_category_statistic(first_cate, batch_size):
         __category_statistic(product_list, prices, shops, season_cates, sell_count)
         i += 1
         skip_num += batch_size
-        print('====== batch:' + str(i) + ', num:' + str(skip_num) + ' =====')
+        print('====== cate: ' + first_cate + ', batch:' + str(i) + ', num:' + str(skip_num) + ' =====')
 
     util.array_to_list(prices)
     util.array_to_list(season_cates)
@@ -137,7 +137,10 @@ def __category_statistic(products, prices, shops, season_cates, sell_count):
             sell_count[0] = max(sell_count[0], product_sell_count)
             sell_count[1] = min(sell_count[1], product_sell_count)
 
-        price = float(product['price'][:-1])
+        try:
+            price = float(product['price'][:-1])
+        except(TypeError, ValueError):
+            continue
         if price is not None:
             if second_cate not in prices.keys():
                 prices[second_cate] = array('f', [0., 1000000., 0., 0., 0.])
@@ -155,6 +158,8 @@ def __category_statistic(products, prices, shops, season_cates, sell_count):
         __get_season_cates(season_cates, second_cate, product)
 
         shop = product['shop']
+        if shop is None:
+            continue
         if shop.find('.') != -1:
             shop = shop.replace('.', '')
         if shop not in shops:
@@ -171,5 +176,6 @@ def __get_season_cates(season_cates, cate, product):
 
 
 if __name__ == '__main__':
-    _first_cate = '美妆护肤'
-    __get_category_statistic(_first_cate, 100)
+    for _first_cate in _first_categories:
+        top_ten_cate = [x[0] for x in query_category_price_data(_first_cate)]
+        query_category_time_data(_first_cate, top_ten_cate)
