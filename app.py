@@ -26,9 +26,9 @@ def category_price_data():
 
     res = {
         'cates': [x[0] for x in price_data],
-        'max_values': [x[0] for x in data_values],
-        'min_values': [x[1] for x in data_values],
-        'mid_values': [x[4] for x in data_values]
+        'max_values': [int(x[0]) for x in data_values],
+        'min_values': [int(x[1]) for x in data_values],
+        'mid_values': [int(x[4]) for x in data_values]
     }
     return json.dumps(res, ensure_ascii=False)
 
