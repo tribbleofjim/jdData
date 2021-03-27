@@ -1,18 +1,11 @@
-def get_season_from_date(date):
+def get_month_from_date(date):
     if date is not None:
         try:
             month = date.split('-')[1]
             if month.startswith('0'):
                 month = month[1:]
             m = int(month)
-            if 1 <= m <= 3:
-                return 0
-            elif 4 <= m <= 6:
-                return 1
-            elif 7 <= m <= 9:
-                return 2
-            else:
-                return 3
+            return m - 1
         except IndexError as e:
             print(e)
             return 0

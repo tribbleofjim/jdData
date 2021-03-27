@@ -16,23 +16,30 @@ analyze_conn = mongo_conn.MongoConn(host=setting.mongo_params['host'],
                                     database=setting.mongo_params['database'],
                                     collection=setting.mongo_params['analyze_collection'])
 # _first_categories = set()
-_first_categories = {'美妆护肤', '农资园艺', '教育培训', '家具日用', '礼品', '图书', '玩具乐器', '手机通讯', '文娱', '母婴', '鞋靴', '宠物生活', '食品饮料',
+_first_categories = ['美妆护肤', '农资园艺', '教育培训', '家具日用', '礼品', '图书', '玩具乐器', '手机通讯', '文娱', '母婴', '鞋靴', '宠物生活', '食品饮料',
                      '电脑、办公', '数码', '汽车用品', '服饰内衣', '医疗保健', '家庭清洁/纸品', '二手商品', '厨具', '家具', '运动户外',
-                     '汽车', '箱包皮具', '钟表', '酒类', '个人护理', '家用电器', '生鲜', '本地生活/旅游出行', '家纺', '家装建材'}
+                     '汽车', '箱包皮具', '钟表', '酒类', '个人护理', '家用电器', '生鲜', '本地生活/旅游出行', '家纺', '家装建材']
 
 
 def query_first_categories():
     if len(_first_categories) != 0:
         return _first_categories
+    else:
+        categories = analyze_conn.find_one(query={'categories': {'$exists': True}})
+        if categories is None or len(categories) == 0:
+            analyze_conn.add_one({
+                'categories': _first_categories
+            })
+            return categories
 
-    categories = data_conn.find(projection={'productClass': 1, '_id': 0})
-    for category in categories:
-        product_class = category['productClass']
-        if product_class is None:
-            continue
-        first_class = product_class.split('-')[0]
-        _first_categories.add(first_class)
-    return _first_categories
+    # categories = data_conn.find(projection={'productClass': 1, '_id': 0})
+    # for category in categories:
+    #     product_class = category['productClass']
+    #     if product_class is None:
+    #         continue
+    #     first_class = product_class.split('-')[0]
+    #     _first_categories.add(first_class)
+    # return _first_categories
 
 
 def _query_category_data(first_cate):
@@ -154,7 +161,7 @@ def __category_statistic(products, prices, shops, season_cates, sell_count):
             second_cate_data[4] = second_cate_data[2] / second_cate_data[3]
 
         if second_cate not in season_cates.keys():
-            season_cates[second_cate] = array('i', [0, 0, 0, 0])
+            season_cates[second_cate] = array('i', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
         __get_season_cates(season_cates, second_cate, product)
 
         shop = product['shop']
@@ -171,11 +178,15 @@ def __get_season_cates(season_cates, cate, product):
     comments = product['commentList']
     for comment in comments:
         time = comment['time']
-        season = util.get_season_from_date(time)
+        season = util.get_month_from_date(time)
         season_cates[cate][season] += 1
 
 
 if __name__ == '__main__':
+    # 预处理所有的数据
+    query_first_categories()
     for _first_cate in _first_categories:
+        __get_category_statistic(_first_cate, 100)
+        query_category_brand_data(_first_cate)
         top_ten_cate = [x[0] for x in query_category_price_data(_first_cate)]
         query_category_time_data(_first_cate, top_ten_cate)

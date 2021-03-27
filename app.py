@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 @app.route('/categories')
 def categories():
-    model = list(query_category.query_first_categories())
+    model = query_category.query_first_categories()
     dic = Result(success=True, model=model).get_json()
     return json.dumps(dic, ensure_ascii=False)
 
@@ -61,7 +61,7 @@ def category_time_data():
     first_cate = request.args.get('category')
     top_ten_cate = [x[0] for x in query_category.query_category_price_data(first_cate)]
     time_data = query_category.query_category_time_data(first_cate, top_ten_cate)
-    time_data.insert(0, ['product', 'spring', 'summer', 'autumn', 'winter'])
+    time_data.insert(0, ['product', '1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'])
     res = {
         'data': time_data
     }

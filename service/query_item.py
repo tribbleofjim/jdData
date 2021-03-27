@@ -160,8 +160,8 @@ def __get_item_data(item):
     for comment in item['commentList']:
         product_type = comment['productType']
         if product_type not in data:
-            data[product_type] = array('i', [0, 0, 0, 0])
-        season = util.get_season_from_date(comment['time'])
+            data[product_type] = array('i', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        season = util.get_month_from_date(comment['time'])
         data[product_type][season] += 1
     return data
 
