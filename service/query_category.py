@@ -32,14 +32,16 @@ def query_first_categories():
             })
             return categories
 
-    # categories = data_conn.find(projection={'productClass': 1, '_id': 0})
-    # for category in categories:
-    #     product_class = category['productClass']
-    #     if product_class is None:
-    #         continue
-    #     first_class = product_class.split('-')[0]
-    #     _first_categories.add(first_class)
-    # return _first_categories
+
+def get_categories():
+    categories = data_conn.find(projection={'productClass': 1, '_id': 0})
+    for category in categories:
+        product_class = category['productClass']
+        if product_class is None:
+            continue
+        first_class = product_class.split('-')[0]
+        _first_categories.add(first_class)
+    return _first_categories
 
 
 def _query_category_data(first_cate):
