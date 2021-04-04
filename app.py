@@ -1,12 +1,75 @@
-from flask import Flask
-from flask import request
+from flask import request, session
 from service import query_category
 from service import query_item
 from service import search_item
 from result import Result
+from mysql_conn import *
 import json
 
-app = Flask(__name__)
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.form
+    phone = data.get('phone')
+    password = data.get('password')
+    table_user = MapleUser.query.filter(MapleUser.phone == phone).first()
+    if table_user is None or table_user.password != password:
+        return json.dumps(Result(success=False, message='用户名或密码错误', model=None), ensure_ascii=False)
+    # 设置session
+    session['phone'] = phone
+    return json.dumps(Result(success=True, message='登录成功', model=None), ensure_ascii=False)
+
+
+@app.route('/exitLogin', methods=['POST'])
+def exit_login():
+    data = request.form
+    phone = data.get('phone')
+    session['phone'] = None
+
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.form
+    phone = data.get('phone')
+    password = data.get('password')
+    nickname = data.get('nickname')
+    auth = 1
+    user = MapleUser(phone, nickname, password, auth)
+    db.session.add(user)
+    db.session.commit()
+    return json.dumps(Result(success=True, message='注册成功', model=None), ensure_ascii=False)
+
+
+@app.route('/modifyPassword', methods=['POST'])
+def modify_password():
+    data = request.form
+    phone = data.get('phone')
+    old_password = data.get('oldPass')
+    new_password = data.get('newPass')
+    user = MapleUser.query.filter(MapleUser.phone == phone).first()
+    if user is None:
+        return json.dumps(Result(success=False, message='不存在该用户', model=None), ensure_ascii=False)
+    if old_password != user.password:
+        return json.dumps(Result(success=False, message='密码错误', model=None), ensure_ascii=False)
+    user.password = new_password
+    db.session.commit()
+    return json.dumps(Result(success=True, message='修改密码成功', model=None), ensure_ascii=False)
+
+
+@app.route('/modifyNickname', methods=['POST'])
+def modify_password():
+    data = request.form
+    phone = data.get('phone')
+    password = data.get('password')
+    new_nickname = data.get('newNickname')
+    user = MapleUser.query.filter(MapleUser.phone == phone).first()
+    if user is None:
+        return json.dumps(Result(success=False, message='不存在该用户', model=None), ensure_ascii=False)
+    if password != user.password:
+        return json.dumps(Result(success=False, message='密码错误', model=None), ensure_ascii=False)
+    user.nickname = new_nickname
+    db.session.commit()
+    return json.dumps(Result(success=True, message='修改昵称成功', model=None), ensure_ascii=False)
 
 
 @app.route('/categories')

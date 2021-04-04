@@ -156,14 +156,21 @@ def __get_item_recom(item):
 
 
 def __get_item_data(item):
-    data = dict()
+    month_data = dict()
+    season_data = dict()
     for comment in item['commentList']:
         product_type = comment['productType']
-        if product_type not in data:
-            data[product_type] = array('i', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-        season = util.get_month_from_date(comment['time'])
-        data[product_type][season] += 1
-    return data
+        if product_type not in month_data:
+            month_data[product_type] = array('i', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+            season_data[product_type] = array('i', [0, 0, 0, 0])
+        month = util.get_month_from_date(comment['time'])
+        season = util.get_season_from_date(comment['time'])
+        month_data[product_type][month] += 1
+        season_data[product_type][season] += 1
+    return {
+        'month_data': month_data,
+        'season_data': season_data
+    }
 
 
 if __name__ == '__main__':
