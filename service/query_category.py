@@ -120,8 +120,8 @@ def __get_category_statistic(first_cate, batch_size):
         skip_num += batch_size
         print('====== cate: ' + first_cate + ', batch:' + str(i) + ', num:' + str(skip_num) + ' =====')
 
-    util.array_to_list(prices)
-    util.array_to_list(season_cates)
+    util.dict_to_list(prices)
+    util.dict_to_list(season_cates)
 
     analyze_data = {
         'first_cate': first_cate,

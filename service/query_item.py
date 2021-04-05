@@ -45,21 +45,35 @@ def get_item_info(sku_id):
 
 def get_item_season_data(sku_id):
     item = __get_item_from_redis(sku_id)
-    season_data = __get_item_data(item)
+    item_data = __get_item_data(item)
+    season_data = item_data['season_data']
+    month_data = item_data['month_data']
     categories = list()
-    item_data = list()
+    item_month_data = list()
+    item_season_data = list()
+    max_value = -1
     cate_idx = -1
-    for cate, data in season_data.items():
+    for cate, data in month_data.items():
+        season = list(season_data[cate])
+        max_value = max(max_value, max(season))
         if cate == '' or None:
             cate = '普通版'
         if cate not in categories:
             categories.append(cate)
             cate_idx += 1
         for i in range(0, len(data)):
-            item_data.append([cate_idx, i, data[i]])
+            item_month_data.append([cate_idx, i, data[i]])
+
+        item_season_data.append({
+            'name': cate,
+            'value': season
+        })
+
     return {
         'categories': categories,
-        'item_data': item_data
+        'season_data': item_season_data,
+        'max_value': max_value,
+        'month_data': item_month_data
     }
 
 
@@ -174,6 +188,6 @@ def __get_item_data(item):
 
 
 if __name__ == '__main__':
-    # print(get_item_season_data('100014348492'))
-    item = __get_item_from_redis('63211541338')
-    __get_item_recom(item)
+    print(get_item_season_data('63211541338'))
+    # item = __get_item_from_redis('63211541338')
+    # __get_item_recom(item)

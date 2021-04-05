@@ -57,7 +57,7 @@ def modify_password():
 
 
 @app.route('/modifyNickname', methods=['POST'])
-def modify_password():
+def modify_nickname():
     data = request.form
     phone = data.get('phone')
     password = data.get('password')

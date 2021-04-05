@@ -31,7 +31,7 @@ def get_season_from_date(date):
             return 0
 
 
-def array_to_list(target_dict):
+def dict_to_list(target_dict):
     for key, value in target_dict.items():
         value = list(value)
         target_dict[key] = value
