@@ -4,72 +4,75 @@ from service import query_item
 from service import search_item
 from result import Result
 from mysql_conn import *
+import util
 import json
 
 
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.form
-    phone = data.get('phone')
-    password = data.get('password')
+    data = request.json['params']
+    print(data)
+    phone = data['phone']
+    password = data['password']
     table_user = MapleUser.query.filter(MapleUser.phone == phone).first()
     if table_user is None or table_user.password != password:
-        return json.dumps(Result(success=False, message='用户名或密码错误', model=None), ensure_ascii=False)
+        return json.dumps(Result(success=False, message='用户名或密码错误', model=None).get_json(), ensure_ascii=False)
     # 设置session
     session['phone'] = phone
-    return json.dumps(Result(success=True, message='登录成功', model=None), ensure_ascii=False)
+    return json.dumps(Result(success=True, message='登录成功', model=None).get_json(), ensure_ascii=False)
 
 
 @app.route('/exitLogin', methods=['POST'])
 def exit_login():
-    data = request.form
-    phone = data.get('phone')
+    data = request.json['params']
+    phone = data['phone']
     session['phone'] = None
+    return json.dumps(Result(success=True, message='退出登录成功', model=None).get_json(), ensure_ascii=False)
 
 
 @app.route('/register', methods=['POST'])
 def register():
-    data = request.form
-    phone = data.get('phone')
-    password = data.get('password')
-    nickname = data.get('nickname')
+    data = request.json['params']
+    phone = data['phone']
+    password = data['password']
+    nickname = data['nickname']
     auth = 1
     user = MapleUser(phone, nickname, password, auth)
     db.session.add(user)
     db.session.commit()
-    return json.dumps(Result(success=True, message='注册成功', model=None), ensure_ascii=False)
+    return json.dumps(Result(success=True, message='注册成功', model=None).get_json(), ensure_ascii=False)
 
 
 @app.route('/modifyPassword', methods=['POST'])
 def modify_password():
-    data = request.form
-    phone = data.get('phone')
-    old_password = data.get('oldPass')
-    new_password = data.get('newPass')
+    data = request.json['params']
+    phone = data['phone']
+    old_password = data['oldPass']
+    new_password = data['newPass']
     user = MapleUser.query.filter(MapleUser.phone == phone).first()
     if user is None:
-        return json.dumps(Result(success=False, message='不存在该用户', model=None), ensure_ascii=False)
+        return json.dumps(Result(success=False, message='不存在该用户', model=None).get_json(), ensure_ascii=False)
     if old_password != user.password:
-        return json.dumps(Result(success=False, message='密码错误', model=None), ensure_ascii=False)
+        return json.dumps(Result(success=False, message='密码错误', model=None).get_json(), ensure_ascii=False)
     user.password = new_password
     db.session.commit()
-    return json.dumps(Result(success=True, message='修改密码成功', model=None), ensure_ascii=False)
+    return json.dumps(Result(success=True, message='修改密码成功', model=None).get_json(), ensure_ascii=False)
 
 
 @app.route('/modifyNickname', methods=['POST'])
 def modify_nickname():
-    data = request.form
-    phone = data.get('phone')
-    password = data.get('password')
-    new_nickname = data.get('newNickname')
+    data = request.json['params']
+    phone = data['phone']
+    password = data['password']
+    new_nickname = data['newNickname']
     user = MapleUser.query.filter(MapleUser.phone == phone).first()
     if user is None:
-        return json.dumps(Result(success=False, message='不存在该用户', model=None), ensure_ascii=False)
+        return json.dumps(Result(success=False, message='不存在该用户', model=None).get_json(), ensure_ascii=False)
     if password != user.password:
-        return json.dumps(Result(success=False, message='密码错误', model=None), ensure_ascii=False)
+        return json.dumps(Result(success=False, message='密码错误', model=None).get_json(), ensure_ascii=False)
     user.nickname = new_nickname
     db.session.commit()
-    return json.dumps(Result(success=True, message='修改昵称成功', model=None), ensure_ascii=False)
+    return json.dumps(Result(success=True, message='修改昵称成功', model=None).get_json(), ensure_ascii=False)
 
 
 @app.route('/categories')
@@ -81,7 +84,7 @@ def categories():
 
 @app.route('/category/price')
 def category_price_data():
-    first_cate = request.args.get('category')
+    first_cate = util.get_first_cate(request.args.get('category'))
     price_data = query_category.query_category_price_data(first_cate)
     data_values = list()
     for data in price_data:
@@ -98,7 +101,7 @@ def category_price_data():
 
 @app.route('/category/brand')
 def category_brand_data():
-    first_cate = request.args.get('category')
+    first_cate = util.get_first_cate(request.args.get('category'))
     brand_data = query_category.query_category_brand_data(first_cate)
     shops_data = list()
     shops = list()
@@ -121,7 +124,7 @@ def category_brand_data():
 
 @app.route('/category/time')
 def category_time_data():
-    first_cate = request.args.get('category')
+    first_cate = util.get_first_cate(request.args.get('category'))
     top_ten_cate = [x[0] for x in query_category.query_category_price_data(first_cate)]
     time_data = query_category.query_category_time_data(first_cate, top_ten_cate)
     time_data.insert(0, ['product', '1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'])

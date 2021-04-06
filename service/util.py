@@ -47,5 +47,11 @@ def get_sell_count(sell_count):
         return -1
 
 
+def get_first_cate(first_cate):
+    if first_cate is None:
+        return first_cate
+    return first_cate.replace('-', '/')
+
+
 if __name__ == '__main__':
     print(get_sell_count(None))
