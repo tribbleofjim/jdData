@@ -36,7 +36,7 @@ def register():
     phone = data['phone']
     password = data['password']
     nickname = data['nickname']
-    auth = 1
+    auth = '1'
     user = MapleUser(phone, nickname, password, auth)
     db.session.add(user)
     db.session.commit()

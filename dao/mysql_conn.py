@@ -16,6 +16,12 @@ class MapleUser(db.Model):
     password = db.Column(db.String(255), nullable=False)
     auth = db.Column(db.Enum('0', '1'))
 
+    def __init__(self, phone, nickname, password, auth):
+        self.phone = phone
+        self.nickname = nickname
+        self.password = password
+        self.auth = auth
+
 
 class Seat(db.Model):
     __tablename__ = 'seat'
