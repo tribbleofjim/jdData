@@ -44,7 +44,7 @@ def get_sell_count(sell_count):
             sell_count = sell_count[:-1] + '0000'
         return int(sell_count)
     except(TypeError, ValueError):
-        return -1
+        return 0
 
 
 def get_first_cate(first_cate):

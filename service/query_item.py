@@ -5,6 +5,7 @@ from array import array
 import redis
 import ast
 import setting
+import search_item
 
 
 data_conn = mongo_conn.MongoConn(host=setting.mongo_params['host'],
@@ -133,7 +134,7 @@ def __get_item_recom(item):
     sell_count = util.get_sell_count(item['sellCount'])
     category = item['productClass']
     if category is None:
-        range_sell_count = sell_count
+        range_sell_count = 0.66
     else:
         first_cate = category.split('-')[0]
         sell_counts = analyze_conn.find_one(query={'first_cate': {'$regex': '^' + first_cate},
@@ -148,25 +149,32 @@ def __get_item_recom(item):
             range_sell_count = 0.99
     range_sell_count *= 5
 
-    good_comments_num = 0
-    bad_comments_num = 0
-    for comment in item['commentList']:
-        if comment['star'] > 3:
-            good_comments_num += 1.5 if comment['isPlus'] else 1
-        else:
-            bad_comments_num += 1.5 if comment['isPlus'] else 1
-    # 设定最小值为3
-    if good_comments_num < bad_comments_num:
-        upper = 3
+    if len(item['commentList']) == 0:
+        comments_num = 2
     else:
-        upper = good_comments_num - bad_comments_num
-    comments_num = upper / 6
+        good_comments_num = 0
+        bad_comments_num = 0
+        for comment in item['commentList']:
+            if comment['star'] > 3:
+                good_comments_num += 1.5 if comment['isPlus'] else 1
+            else:
+                bad_comments_num += 1.5 if comment['isPlus'] else 1
+        # 设定最小值为3
+        if good_comments_num < bad_comments_num:
+            upper = 3
+        else:
+            upper = good_comments_num - bad_comments_num
+        # print("upper=" + str(upper) + ",under=" + str(len(item['commentList'])))
+        comments_num = (upper / (len(item['commentList']))) * 5
+    if comments_num > 5:
+        comments_num = 5
 
-    recom = round((range_sell_count * 0.4 + comments_num * 0.6), 1)
-    if recom < 2:
-        recom += 1
+    recom = round((range_sell_count * 0.7 + comments_num * 0.3), 1)
+    # if recom < 2:
+    #     recom += 1
     print(recom)
     item['recom'] = recom
+    return recom
 
 
 def __get_item_data(item):
@@ -188,6 +196,22 @@ def __get_item_data(item):
 
 
 if __name__ == '__main__':
-    print(get_item_season_data('63211541338'))
+    # print(get_item_season_data('63211541338'))
     # item = __get_item_from_redis('63211541338')
     # __get_item_recom(item)
+    test_res = search_item.search_items_test('口红', 40, '100-2000')
+    res_dic = {
+        "0-1.5": 0,
+        "1.5-3.5": 0,
+        "3.5-5": 0
+    }
+    for test_r in test_res:
+        # print(test_r)
+        recom = __get_item_recom(test_r)
+        if recom <= 1.5:
+            res_dic["0-1.5"] += 1
+        elif 1.5 < recom < 3.5:
+            res_dic["1.5-3.5"] += 1
+        else:
+            res_dic["3.5-5"] += 1
+    print(res_dic)
